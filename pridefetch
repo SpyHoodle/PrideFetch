@@ -8,11 +8,10 @@ from platform import platform as system
 from platform import release as kernel
 from random import choice as random_choice
 from socket import gethostname
+from subprocess import check_output
 from time import clock_gettime, CLOCK_BOOTTIME
 
 from distro import name as distribution
-
-from packages import get_num_packages as packages
 
 # Define a dictionary of all the flags and their colors
 # Each color is the color for an individual row in the flag
@@ -112,6 +111,24 @@ def main():
     else:
         draw_fetch("classic", args.width)
 
+commands = [
+    "pacman -Qq",
+    "apt list --installed",
+    "yum list installed",
+    "dnf list installed",
+    "qlist -I",
+    "nix profile list",
+    "nix-env -q",
+    "rpm -qa",
+]
+
+def packages() -> (int, bool):
+    for command in commands:
+        try:
+            return len(check_output(command.split(" ")).decode("utf-8").split("\n")) - 1
+        except FileNotFoundError:
+            pass
+    return False
 
 if __name__ == "__main__":
     main()
