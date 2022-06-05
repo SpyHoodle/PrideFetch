@@ -13,7 +13,7 @@ from socket import gethostname
 # System info modules
 from platform import platform as system
 from platform import release as kernel
-# from platform import machine as architecture
+from platform import machine as architecture
 from distro import name as distribution
 from modules.packages import get_num_packages as packages
 
@@ -37,8 +37,20 @@ flags = {
     "graysexual": [54, 242, 255, 242, 54],
 }
 
+# A dictionary of all the available stats
+stats = {
+    "os": distribution() or system() or 'N/A',
+    "arch": architecture() or 'N/A',
+    "pkgs": packages() or 'N/A',
+    "kernel": kernel() or system() or 'N/A',
+    "uptime": str(timedelta(seconds=clock_gettime(CLOCK_BOOTTIME))).split('.', 1)[0]
+}
+
 # When printed, reset will end the color of the row
 reset = "\033[0m\033[39m"
+
+# When printed, text will become bold
+bold = "\033[1m"
 
 
 def color256(col: int, bg_fg: str) -> str:
@@ -46,23 +58,27 @@ def color256(col: int, bg_fg: str) -> str:
     return f"\033[{48 if bg_fg == 'bg' else 38};5;{col}m"
 
 
-def draw_fetch(flag_name: str, width: int = None):
+def calc_fetch(flag_name: str, show_stats = None, width = None):
     # Load the chosen flag from the dictionary of flags
     flag = flags[flag_name]
 
     # Make sure that the row color is different to the color of the hostname
     row_color = color256(flag[1] if flag[0] != flag[1] else flag[2], "fg")
 
-    # The fetch data (system info) to be displayed
+    # Set default stats to show
+    show_stats = show_stats or ["os", "pkgs", "kernel", "uptime"]
+
+    # Initalise the fetch data (system info) to be displayed with the user@hostname
     row_data = [
         f"{color256(flag[0], 'fg') if flag[0] != 0 else color256(242, 'fg')}"
         f"\033[1m{getuser()}@{gethostname()}{reset}",
-        f"{row_color}os      {reset}{distribution() or system() or 'N/A'}",
-        # f"{row_color}arch    {reset}{architecture() or 'N/A'}",
-        f"{row_color}pkgs    {reset}{packages() or 'N/A'}",
-        f"{row_color}kernel  {reset}{kernel() or system() or 'N/A'}",
-        f"{row_color}uptime  {reset}{str(timedelta(seconds=clock_gettime(CLOCK_BOOTTIME))).split('.', 1)[0]}"
     ]
+
+    # Add the chosen stats to the list row_data
+    for stat in show_stats:
+        value = stats[stat]
+        row = f"{row_color}{stat}: {reset}{value}"
+        row_data.append(row)
 
     # Until the flag is a greater length than the data
     while len(flag) < len(row_data):
@@ -75,6 +91,10 @@ def draw_fetch(flag_name: str, width: int = None):
     # Ensures nothing is printed for empty lines
     row_data.append("")
 
+    # Return all the flag information ready for drawing
+    return flag, width, row_data
+
+def draw_fetch(flag: list, width: int, row_data: list):
     # Print a blank line to separate the flag from the terminal prompt
     print()
 
@@ -82,7 +102,7 @@ def draw_fetch(flag_name: str, width: int = None):
         # Print out each row of the fetch
         print(f" {color256(row, 'bg')}{' ' * width}\033[49m{reset} {row_data[min(index, len(row_data) - 1)]}{reset}")
 
-    # Print a blank line to separate the flag from the terminal prompt
+    # Print a blank line again to separate the flag from the terminal prompt
     print()
 
 
@@ -90,32 +110,45 @@ def main():
     # Argument configuration - options
     parser = ArgumentParser()
     parser.add_argument("-f", "--flag", help="displays the chosen flag")
-    parser.add_argument("-r", "--random", help="randomly choose a flag from a list seperated by commas")
+    parser.add_argument("-r", "--random", help="randomly choose a flag from a comma-seperated list")
+    parser.add_argument("-s", "--stats", help="choose the stats to appear from a comma-seperated list")
     parser.add_argument("-w", "--width", help="choose a custom width for the flag", type=int)
-    parser.add_argument("-l", "--list", help="lists all the flags that can be displayed", action="store_true")
+    parser.add_argument("-l", "--list", help="lists all the flags and stats that can be displayed", action="store_true")
 
     # Parse (collect) any arguments
     args = parser.parse_args()
+
+    if args.stats:
+        # Collect chosen stats if they exist
+        show_stats = args.stats.split(",")
+
+    else:
+        # Otherwise, use the default stats
+        show_stats = None
 
     if args.flag:
         # Check if the flag exists in the dictionary of flags
         assert args.flag in flags.keys(), f"flag '{args.flag}' is not a valid flag"
 
         # Draw the chosen flag and system information
-        draw_fetch(args.flag, args.width)
+        flag, width, row_data = calc_fetch(args.flag, show_stats, args.width)
+        draw_fetch(flag, width, row_data)
 
     elif args.random:
         # Choose a flag at random from a list of comma-seperated flags
         flag_choices = args.random.split(",")
-        draw_fetch(random_choice(flag_choices), args.width)
+        flag, width, row_data = calc_fetch(random_choice(flag_choices), show_stats, args.width)
+        draw_fetch(flag, width, row_data)
 
     elif args.list:
         # List out all the available flags
-        print(f"Available flags:\n{', '.join(flags)}")
+        print(f"{bold}Available flags:{reset}\n{', '.join(flags)}\n\n"
+              f"{bold}Available stats:{reset}\n{', '.join(stats)}")
 
     else:
         # By default, draw the classic flag
-        draw_fetch("classic", args.width)
+        flag, width, row_data = calc_fetch("classic", show_stats, args.width)
+        draw_fetch(flag, width, row_data)
 
 
 if __name__ == "__main__":
