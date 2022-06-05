@@ -58,18 +58,18 @@ def color256(col: int, bg_fg: str) -> str:
     return f"\033[{48 if bg_fg == 'bg' else 38};5;{col}m"
 
 
-def calc_fetch(flag_name: str, show_stats = None, width = None):
+def generate_fetch(flag_name: str, show_stats=None, width=None):
     # Load the chosen flag from the dictionary of flags
     flag = flags[flag_name]
 
     # Make sure that the row color is different to the color of the hostname
     row_color = color256(flag[1] if flag[0] != flag[1] else flag[2], "fg")
 
-    # Set default stats to show
+    # Set default stats to show in the fetch
     show_stats = show_stats or ["os", "pkgs", "kernel", "uptime"]
 
-    # Initalise the fetch data (system info) to be displayed with the user@hostname
-    row_data = [
+    # Initialise the fetch data (system info) to be displayed with the user@hostname
+    data = [
         f"{color256(flag[0], 'fg') if flag[0] != 0 else color256(242, 'fg')}"
         f"\033[1m{getuser()}@{gethostname()}{reset}",
     ]
@@ -78,10 +78,10 @@ def calc_fetch(flag_name: str, show_stats = None, width = None):
     for stat in show_stats:
         value = stats[stat]
         row = f"{row_color}{stat}: {reset}{value}"
-        row_data.append(row)
+        data.append(row)
 
     # Until the flag is a greater length than the data
-    while len(flag) < len(row_data):
+    while len(flag) < len(data):
         # If the data is greater than the flag length then duplicate the length of the flag
         flag = [element for element in flag for _ in (0, 1)]
 
@@ -89,21 +89,27 @@ def calc_fetch(flag_name: str, show_stats = None, width = None):
     width = width or round(len(flag) * 1.5 * 3)
 
     # Ensures nothing is printed for empty lines
-    row_data.append("")
+    data.append("")
 
     # Return all the flag information ready for drawing
-    return flag, width, row_data
+    return flag, width, data
 
-def draw_fetch(flag: list, width: int, row_data: list):
+
+def draw_fetch(flag: list, width: int, data: list):
     # Print a blank line to separate the flag from the terminal prompt
     print()
 
     for index, row in enumerate(flag):
         # Print out each row of the fetch
-        print(f" {color256(row, 'bg')}{' ' * width}\033[49m{reset} {row_data[min(index, len(row_data) - 1)]}{reset}")
+        print(f" {color256(row, 'bg')}{' ' * width}\033[49m{reset} {data[min(index, len(data) - 1)]}{reset}")
 
     # Print a blank line again to separate the flag from the terminal prompt
     print()
+
+
+def create_fetch(flag_name: str, show_stats=None, width=None):
+    flag, width, data = generate_fetch(flag_name, show_stats, width)
+    draw_fetch(flag, width, data)
 
 
 def main():
@@ -131,14 +137,12 @@ def main():
         assert args.flag in flags.keys(), f"flag '{args.flag}' is not a valid flag"
 
         # Draw the chosen flag and system information
-        flag, width, row_data = calc_fetch(args.flag, show_stats, args.width)
-        draw_fetch(flag, width, row_data)
+        create_fetch(args.flag, show_stats, args.width)
 
     elif args.random:
         # Choose a flag at random from a list of comma-seperated flags
         flag_choices = args.random.split(",")
-        flag, width, row_data = calc_fetch(random_choice(flag_choices), show_stats, args.width)
-        draw_fetch(flag, width, row_data)
+        create_fetch(random_choice(flag_choices), show_stats, args.width)
 
     elif args.list:
         # List out all the available flags
@@ -147,8 +151,7 @@ def main():
 
     else:
         # By default, draw the classic flag
-        flag, width, row_data = calc_fetch("classic", show_stats, args.width)
-        draw_fetch(flag, width, row_data)
+        create_fetch("classic", show_stats, args.width)
 
 
 if __name__ == "__main__":
