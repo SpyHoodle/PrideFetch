@@ -2,7 +2,7 @@
   description = "A flake to run pridefetch";
 
   inputs = {
-    nixpkgs-master.url = "github:nixos/nixpkgs/master";
+    nixpkgs-master.url = "github:nixos/nixpkgs/nixpkgs-unstable";
   };
 
   outputs = { self, nixpkgs, nixpkgs-master }: let
