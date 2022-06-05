@@ -7,10 +7,10 @@
 
   outputs = { self, nixpkgs, nixpkgs-unstable }: let
     system = "x86_64-linux";
- 
+
     forAllSystems = f: nixpkgs.lib.genAttrs nixpkgs.lib.platforms.all (system: f system);
   in rec {
-    packages = forAllSystems (system: let 
+    packages = forAllSystems (system: let
       pkgs = import nixpkgs {
         inherit system;
       };
