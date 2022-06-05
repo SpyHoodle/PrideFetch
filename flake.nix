@@ -2,23 +2,23 @@
   description = "A flake to run pridefetch";
 
   inputs = {
-    nixpkgs-master.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
   };
 
-  outputs = { self, nixpkgs, nixpkgs-master }: let
+  outputs = { self, nixpkgs, nixpkgs-unstable }: let
     system = "x86_64-linux";
  
-    forAllSystems = f: nixpkgs.lib.genAttrs nixpkgs.lib.systems.supported.hydra (system: f system);
+    forAllSystems = f: nixpkgs.lib.genAttrs nixpkgs.lib.platforms.all (system: f system);
   in rec {
     packages = forAllSystems (system: let 
       pkgs = import nixpkgs {
         inherit system;
       };
-      pkgs-master = import nixpkgs-master {
+      pkgs-unstable = import nixpkgs-unstable {
         inherit system;
       };
     in {
-      pridefetch = pkgs-master.pridefetch.overrideAttrs (finalAttrs: previousAttrs: {
+      pridefetch = pkgs-unstable.pridefetch.overrideAttrs (finalAttrs: previousAttrs: {
         src = builtins.path { path = ./.; name = "pridefetch"; };
       });
     });
