@@ -76,7 +76,7 @@ def generate_fetch(flag_name: str, show_stats=None, width=None):
 
     # Add the chosen stats to the list row_data
     for stat in show_stats:
-        value = stats[stat]
+        value = stats[stat]()
         row = f"{row_color}{stat}: {reset}{value}"
         data.append(row)
 
