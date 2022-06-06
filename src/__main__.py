@@ -134,7 +134,7 @@ def main():
 
     elif args.stats:
         # Collect chosen stats if they exist
-        show_stats = args.stats.split(",").strip()
+        show_stats = args.stats.split(",")
 
     else:
         # Otherwise, use the default stats
