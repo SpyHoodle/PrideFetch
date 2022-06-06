@@ -39,11 +39,11 @@ flags = {
 
 # A dictionary of all the available stats
 stats = {
-    "os": distribution() or system() or 'N/A',
-    "arch": architecture() or 'N/A',
-    "pkgs": packages() or 'N/A',
-    "kernel": kernel() or system() or 'N/A',
-    "uptime": str(timedelta(seconds=clock_gettime(CLOCK_BOOTTIME))).split('.', 1)[0]
+    "os": lambda: distribution() or system() or 'N/A',
+    "arch": lambda: architecture() or 'N/A',
+    "pkgs": lambda: packages() or 'N/A',
+    "kernel": lambda: kernel() or system() or 'N/A',
+    "uptime": lambda: str(timedelta(seconds=clock_gettime(CLOCK_BOOTTIME))).split('.', 1)[0]
 }
 
 # When printed, reset will end the color of the row
