@@ -108,6 +108,9 @@ def draw_fetch(flag: list, width: int, data: list):
 
 
 def create_fetch(flag_name: str, show_stats=None, width=None):
+    # Check if the flag exists in the dictionary of flags
+    assert flag_name in flags.keys(), f"flag '{flag_name}' is not a valid flag"
+
     flag, width, data = generate_fetch(flag_name, show_stats, width)
     draw_fetch(flag, width, data)
 
@@ -115,12 +118,12 @@ def create_fetch(flag_name: str, show_stats=None, width=None):
 def main():
     # Argument configuration - options
     parser = ArgumentParser()
-    parser.add_argument("-f", "--flag", help="displays the chosen flag")
+    parser.add_argument("-l", "--list", help="lists all the flags and stats that can be displayed", action="store_true")
+    parser.add_argument("-a", "--all-stats", help="use all the available stats (overrides '--stats')", action="store_true")
+    parser.add_argument("-f", "--flag", help="displays a flag of your choice")
     parser.add_argument("-r", "--random", help="randomly choose a flag from a comma-seperated list")
     parser.add_argument("-s", "--stats", help="choose the stats to appear from a comma-seperated list")
     parser.add_argument("-w", "--width", help="choose a custom width for the flag", type=int)
-    parser.add_argument("-a", "--all-stats", help="use all the available stats (overrides '--stats')", action="store_true")
-    parser.add_argument("-l", "--list", help="lists all the flags and stats that can be displayed", action="store_true")
 
     # Parse (collect) any arguments
     args = parser.parse_args()
@@ -131,16 +134,13 @@ def main():
 
     elif args.stats:
         # Collect chosen stats if they exist
-        show_stats = args.stats.split(",")
+        show_stats = args.stats.split(",").strip()
 
     else:
         # Otherwise, use the default stats
         show_stats = None
 
     if args.flag:
-        # Check if the flag exists in the dictionary of flags
-        assert args.flag in flags.keys(), f"flag '{args.flag}' is not a valid flag"
-
         # Draw the chosen flag and system information
         create_fetch(args.flag, show_stats, args.width)
 
