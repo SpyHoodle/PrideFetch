@@ -119,12 +119,17 @@ def main():
     parser.add_argument("-r", "--random", help="randomly choose a flag from a comma-seperated list")
     parser.add_argument("-s", "--stats", help="choose the stats to appear from a comma-seperated list")
     parser.add_argument("-w", "--width", help="choose a custom width for the flag", type=int)
+    parser.add_argument("-a", "--all-stats", help="use all the available stats (overrides '--stats')", action="store_true")
     parser.add_argument("-l", "--list", help="lists all the flags and stats that can be displayed", action="store_true")
 
     # Parse (collect) any arguments
     args = parser.parse_args()
 
-    if args.stats:
+    if args.all_stats:
+        # Add all the available stats to show_stats
+        show_stats = stats.keys()
+
+    elif args.stats:
         # Collect chosen stats if they exist
         show_stats = args.stats.split(",")
 
