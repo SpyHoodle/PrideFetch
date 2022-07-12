@@ -4,8 +4,7 @@ commands = [
     "pacman -Qq --color never",  # Arch Linux
     "xbps-query -l",  # Void Linux
     "kiss l",  # KISS Linux
-    "apt list --installed",  # Debian, Ubuntu, Mint
-    "dpkg -l",  # Debian, Ubuntu, Mint
+    "dpkg-query -f '.\n' -W",  # Debian, Ubuntu, Mint
     "dnf list installed",  # Fedora
     "zypper search -i",  # openSUSE
     "rpm -qa",  # RHEL, Fedora Core, CentOS
