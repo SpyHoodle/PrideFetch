@@ -76,8 +76,16 @@ def generate_fetch(flag_name: str, show_stats=None, width=None):
 
     # Add the chosen stats to the list row_data
     for stat in show_stats:
+        # Calculate the value for the stat by running its function
         value = stats[stat]()
-        row = f"{row_color}{stat}: {reset}{value}"
+
+        # Calculate the correct amount of spaces to keep the stat values in line with each other
+        spaces = ((len(max(show_stats)) - len(stat)) + 1) * " "
+
+        # Generate a row
+        row = f"{row_color}{stat}:{spaces}{reset}{value}"
+
+        # Add the row to the data
         data.append(row)
 
     # Until the flag is a greater length than the data
