@@ -4,7 +4,6 @@
 from argparse import ArgumentParser
 from datetime import timedelta
 from random import choice as random_choice
-from time import clock_gettime, CLOCK_BOOTTIME
 
 # Title - user@hostname
 from getpass import getuser
@@ -13,6 +12,7 @@ from socket import gethostname
 # System info modules
 from platform import platform as system
 from platform import release as kernel
+from time import clock_gettime, CLOCK_BOOTTIME
 from platform import machine as architecture
 from distro import name as distribution
 from modules.packages import get_num_packages as packages
@@ -34,7 +34,7 @@ flags = {
     "aromantic": [71, 149, 255, 249, 0],
     "agender": [0, 251, 255, 149, 255, 251, 0],
     "asexual": [0, 242, 255, 54],
-    "graysexual": [54, 242, 255, 242, 54],
+    "graysexual": [54, 242, 255, 242, 54]
 }
 
 # A dictionary of all the available stats
@@ -82,7 +82,7 @@ def generate_fetch(flag_name: str, show_stats=None, width=None):
         # Calculate the correct amount of spaces to keep the stat values in line with each other
         spaces = ((len(max(show_stats)) - len(stat)) + 1) * " "
 
-        # Generate a row
+        # Generate a row with color, stat name and its value
         row = f"{row_color}{stat}:{spaces}{reset}{value}"
 
         # Add the row to the data
@@ -119,7 +119,10 @@ def create_fetch(flag_name: str, show_stats=None, width=None):
     # Check if the flag exists in the dictionary of flags
     assert flag_name in flags.keys(), f"flag '{flag_name}' is not a valid flag"
 
+    # Generate a fetch with the given info
     flag, width, data = generate_fetch(flag_name, show_stats, width)
+
+    # Draw the fetch
     draw_fetch(flag, width, data)
 
 
@@ -127,7 +130,7 @@ def main():
     # Argument configuration - options
     parser = ArgumentParser()
     parser.add_argument("-l", "--list", help="lists all the flags and stats that can be displayed", action="store_true")
-    parser.add_argument("-a", "--all-stats", help="use all the available stats (overrides '--stats')", action="store_true")
+    parser.add_argument("-a", "--all-stats", help="use all available stats (overrides '--stats')", action="store_true")
     parser.add_argument("-f", "--flag", help="displays a flag of your choice")
     parser.add_argument("-r", "--random", help="randomly choose a flag from a comma-seperated list")
     parser.add_argument("-s", "--stats", help="choose the stats to appear from a comma-seperated list")
