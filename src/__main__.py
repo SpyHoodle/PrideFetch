@@ -49,6 +49,14 @@ stats = {
 
 
 def generate_fetch(flag_name: str, show_stats: list = None, width: int = None) -> (list, int, list):
+    """
+    Generates variables needed for a fetch
+    :param flag_name: The name of the flag to use
+    :param show_stats: Stats to show in the fetch
+    :param width: Custom width of the flag
+    :return: Generated flag data
+    """
+
     # Load the chosen flag from the dictionary of flags
     flag = flags[flag_name]
 
@@ -94,19 +102,33 @@ def generate_fetch(flag_name: str, show_stats: list = None, width: int = None) -
 
 
 def draw_fetch(flag: list, width: int, data: list) -> None:
+    """
+    Draws a fetch to the screen
+    :param flag: The flag as a list of colors
+    :param width: Width of the flag rows
+    :param data: System stats data
+    """
+
     # Print a blank line to separate the flag from the terminal prompt
     print()
 
     for index, row in enumerate(flag):
         # Print out each row of the fetch
-        print(f" {color.color256(row, 'bg')}{' ' * width}\033[49m{color.clear} "  # Flag line
-              f"{data[min(index, len(data) - 1)]}{color.clear}")  # Stats line
+        print(f" {color.color256(row, 'bg')}{' ' * width}\033[49m{color.clear} "  # Flag rows
+              f"{data[min(index, len(data) - 1)]}{color.clear}")  # Stats rows
 
     # Print a blank line again to separate the flag from the terminal prompt
     print()
 
 
 def create_fetch(flag_name: str, show_stats: list = None, width: int = None) -> None:
+    """
+    Creates a fetch, by generating and then drawing it
+    :param flag_name: The name of the flag to use
+    :param show_stats: Stats to show in the fetch
+    :param width: Custom width of the flag
+    """
+
     # Check if the flag exists in the dictionary of flags
     assert flag_name in flags.keys(), f"flag '{flag_name}' is not a valid flag"
 
@@ -118,6 +140,14 @@ def create_fetch(flag_name: str, show_stats: list = None, width: int = None) -> 
 
 
 def check_valid_arguments(arg_flag: str, arguments: list, valid_arguments: list) -> bool:
+    """
+    Checks if arguments are valid
+    :param arg_flag: The argument flag e.g. --random, --stats etc.
+    :param arguments: A list of user inputted arguments
+    :param valid_arguments: The valid list of arguments to check against
+    :return: True if the arguments are valid, False if not
+    """
+
     # If there are any arguments remaining
     if len(arguments) > 0:
         for argument in arguments:
@@ -137,6 +167,14 @@ def check_valid_arguments(arg_flag: str, arguments: list, valid_arguments: list)
 
 
 def parse_comma_arguments(arg_flag: str, comma_arguments: str, valid_arguments: list) -> list:
+    """
+    Parses comma seperated arguments and checks if they are valid
+    :param arg_flag: The argument flag e.g. --random, --stats etc.
+    :param comma_arguments: Raw string of user inputted arguments including commas
+    :param valid_arguments: The valid list of arguments to check against
+    :return: Parsed arguments if valid, exits the program if invalid
+    """
+
     # Separate arguments into a list
     arguments = comma_arguments.split(",")
 
@@ -153,9 +191,13 @@ def parse_comma_arguments(arg_flag: str, comma_arguments: str, valid_arguments: 
 
 
 def main():
+    """
+    Main function that evaluates command line arguments
+    """
+
     # Argument configuration - options
     parser = ArgumentParser()
-    parser.add_argument("-l", "--list", help="lists all the flags and stats that can be displayed", action="store_true")
+    parser.add_argument("-l", "--list", help="lists all flags and stats that can be displayed", action="store_true")
     parser.add_argument("-a", "--all-stats", help="use all available stats (overrides '--stats')", action="store_true")
     parser.add_argument("-f", "--flag", help="displays a flag of your choice")
     parser.add_argument("-r", "--random", help="randomly choose a flag from a comma-seperated list")
