@@ -129,6 +129,28 @@ def create_fetch(flag_name: str, show_stats=None, width=None):
     draw_fetch(flag, width, data)
 
 
+def check_valid_arguments(arg_flag: str, arguments: list, valid_arguments: list) -> bool:
+    # Remove empty string items and remove whitespaces
+    arguments = [argument.strip() for argument in arguments if argument.strip()]
+
+    # If there are any arguments remaining
+    if len(arguments) > 0:
+        for argument in arguments:
+            # If the argument isn't in valid_arguments, it isn't valid
+            if argument not in valid_arguments:
+                print(f"{bold}{red}Error: Invalid argument '{argument}' for '{arg_flag}'{reset}\n"
+                      f"  {red}╰> must be one of '{', '.join(valid_arguments)}'{reset}")
+                return False
+
+    # Otherwise, the user must have typed comma(s) without any arguments
+    else:
+        print(f"{bold}{red}Error: No arguments given for '{arg_flag}'{reset}\n"
+              f"  {red}╰> must be one of '{', '.join(valid_arguments)}'{reset}")
+        return False
+
+    return True
+
+
 def main():
     # Argument configuration - options
     parser = ArgumentParser()
@@ -150,25 +172,8 @@ def main():
         # Collect chosen stats if they exist
         show_stats = args.stats.split(",")
 
-        # Remove empty string items and remove whitespaces
-        show_stats = [stat.strip() for stat in show_stats if stat.strip()]
-
-        # If the user has entered stats
-        if len(show_stats) > 0:
-            for stat in show_stats:
-                # If the stat isn't in stats, it isn't valid
-                if stat not in stats:
-                    # Tell the user the stat is invalid
-                    print(f"{bold}{red}Error: Invalid stat '{stat}' (does not exist){reset}")
-
-                    # Exit with an error code
-                    exit(1)
-
-        else:
-            # The user must have typed a comma without any stats
-            print(f"{bold}{red}Error: No stats given with '--stats'{reset}")
-
-            # Exit with an error code
+        # Check if the passed arguments are valid, if not, exit with an error
+        if not check_valid_arguments("--stats", show_stats, list(stats)):
             exit(1)
 
     else:
@@ -180,8 +185,14 @@ def main():
         create_fetch(args.flag, show_stats, args.width)
 
     elif args.random:
-        # Choose a flag at random from a list of comma-seperated flags
+        # Collect chosen flags if they exist
         flag_choices = args.random.split(",")
+
+        # Check if the passed arguments are valid, if not, exit with an error
+        if not check_valid_arguments("--random", flag_choices, list(flags)):
+            exit(1)
+
+        # Draw a randomly selected flag from the list
         create_fetch(random_choice(flag_choices), show_stats, args.width)
 
     elif args.list:
