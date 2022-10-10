@@ -1,4 +1,4 @@
-# ASCII colour codes for text
+# ASCII color codes for text
 clear = "\033[0m\033[39m"
 bold = "\033[1m"
 red = "\033[31m"
