@@ -14,7 +14,6 @@ from platform import platform as system
 from platform import release as kernel
 from time import clock_gettime, CLOCK_BOOTTIME
 from platform import machine as architecture
-from typing import Tuple, List, Any
 
 from distro import name as distribution
 from modules.packages import get_num_packages as packages
@@ -63,7 +62,7 @@ def color256(col: int, bg_fg: str) -> str:
     return f"\033[{48 if bg_fg == 'bg' else 38};5;{col}m"
 
 
-def generate_fetch(flag_name: str, stat_choices: list = None, width: int = None) -> (list, int, list):
+def generate_fetch(flag_name: str, show_stats: list = None, width: int = None) -> (list, int, list):
     # Load the chosen flag from the dictionary of flags
     flag = flags[flag_name]
 
@@ -71,7 +70,7 @@ def generate_fetch(flag_name: str, stat_choices: list = None, width: int = None)
     row_color = color256(flag[1] if flag[0] != flag[1] else flag[2], "fg")
 
     # Set default stats to show in the fetch
-    stat_choices = stat_choices or ["os", "pkgs", "kernel", "uptime"]
+    show_stats = show_stats or ["os", "pkgs", "kernel", "uptime"]
 
     # Initialise the fetch data (system info) to be displayed with the user@hostname
     data = [
@@ -80,12 +79,12 @@ def generate_fetch(flag_name: str, stat_choices: list = None, width: int = None)
     ]
 
     # Add the chosen stats to the list row_data
-    for stat in stat_choices:
+    for stat in show_stats:
         # Calculate the value for the stat by running its function
         value = stats[stat]()
 
         # Calculate the correct amount of spaces to keep the stat values in line with each other
-        spaces = ((len(max(stat_choices)) - len(stat)) + 1) * " "
+        spaces = ((len(max(show_stats)) - len(stat)) + 1) * " "
 
         # Generate a row with color, stat name and its value
         row = f"{row_color}{stat}:{spaces}{reset}{value}"
@@ -108,7 +107,7 @@ def generate_fetch(flag_name: str, stat_choices: list = None, width: int = None)
     return flag, width, data
 
 
-def draw_fetch(flag: list, width: int, data: list):
+def draw_fetch(flag: list, width: int, data: list) -> None:
     # Print a blank line to separate the flag from the terminal prompt
     print()
 
@@ -120,12 +119,12 @@ def draw_fetch(flag: list, width: int, data: list):
     print()
 
 
-def create_fetch(flag_name: str, stat_choices: list = None, width: int = None):
+def create_fetch(flag_name: str, show_stats: list = None, width: int = None) -> None:
     # Check if the flag exists in the dictionary of flags
     assert flag_name in flags.keys(), f"flag '{flag_name}' is not a valid flag"
 
     # Generate a fetch with the given info
-    flag, width, data = generate_fetch(flag_name, stat_choices, width)
+    flag, width, data = generate_fetch(flag_name, show_stats, width)
 
     # Draw the fetch
     draw_fetch(flag, width, data)
@@ -150,6 +149,22 @@ def check_valid_arguments(arg_flag: str, arguments: list, valid_arguments: list)
     return True
 
 
+def parse_comma_arguments(arg_flag: str, comma_arguments: str, valid_arguments: list) -> list:
+    # Separate arguments into a list
+    arguments = comma_arguments.split(",")
+
+    # Remove whitespaces from the list of arguments
+    arguments = [argument.strip() for argument in arguments if argument.strip()]
+
+    # Check if the passed arguments are valid, if not, exit with an error
+    if not check_valid_arguments(arg_flag, arguments, valid_arguments):
+        exit(1)
+
+    # Otherwise return the arguments
+    else:
+        return arguments
+
+
 def main():
     # Argument configuration - options
     parser = ArgumentParser()
@@ -165,19 +180,11 @@ def main():
 
     if args.all_stats:
         # Add all the available stats to show_stats
-        show_stats = stats.keys()
+        show_stats = list(stats)
 
     elif args.stats:
-        # Collect chosen stats if they exist
-        show_stats = args.stats.split(",")
-
-        # Remove whitespace stat choices
-        # TODO: Rename and create function
-        show_stats = [flag.strip() for flag in show_stats if flag.strip()]
-
-        # Check if the passed arguments are valid, if not, exit with an error
-        if not check_valid_arguments("--stats", show_stats, list(stats)):
-            exit(1)
+        # Parse chosen statistics arguments if they exist
+        show_stats = parse_comma_arguments("--stats", args.stats, list(stats))
 
     else:
         # Otherwise, use the default stats
@@ -188,15 +195,8 @@ def main():
         create_fetch(args.flag, show_stats, args.width)
 
     elif args.random:
-        # Collect chosen flags if they exist
-        flag_choices = args.random.split(",")
-
-        # Remove empty items and remove whitespaces
-        flag_choices = [flag.strip() for flag in flag_choices if flag.strip()]
-
-        # Check if the passed arguments are valid, if not, exit with an error
-        if not check_valid_arguments("--random", flag_choices, list(flags)):
-            exit(1)
+        # Parse chosen random flag arguments if they exist
+        flag_choices = parse_comma_arguments("--random", args.random, list(flags))
 
         # Draw a randomly selected flag from the list
         create_fetch(random_choice(flag_choices), show_stats, args.width)
