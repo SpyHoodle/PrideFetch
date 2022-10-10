@@ -14,6 +14,8 @@ from platform import platform as system
 from platform import release as kernel
 from time import clock_gettime, CLOCK_BOOTTIME
 from platform import machine as architecture
+from typing import Tuple, List, Any
+
 from distro import name as distribution
 from modules.packages import get_num_packages as packages
 
@@ -61,7 +63,8 @@ def color256(col: int, bg_fg: str) -> str:
     return f"\033[{48 if bg_fg == 'bg' else 38};5;{col}m"
 
 
-def generate_fetch(flag_name: str, show_stats=None, width=None):
+def generate_fetch(flag_name: str, stat_choices: list = None, width: int = None) -> \
+        tuple[list[int | Any] | list[int] | Any, int | None, list[str]]:
     # Load the chosen flag from the dictionary of flags
     flag = flags[flag_name]
 
@@ -69,7 +72,7 @@ def generate_fetch(flag_name: str, show_stats=None, width=None):
     row_color = color256(flag[1] if flag[0] != flag[1] else flag[2], "fg")
 
     # Set default stats to show in the fetch
-    show_stats = show_stats or ["os", "pkgs", "kernel", "uptime"]
+    stat_choices = stat_choices or ["os", "pkgs", "kernel", "uptime"]
 
     # Initialise the fetch data (system info) to be displayed with the user@hostname
     data = [
@@ -78,12 +81,12 @@ def generate_fetch(flag_name: str, show_stats=None, width=None):
     ]
 
     # Add the chosen stats to the list row_data
-    for stat in show_stats:
+    for stat in stat_choices:
         # Calculate the value for the stat by running its function
         value = stats[stat]()
 
         # Calculate the correct amount of spaces to keep the stat values in line with each other
-        spaces = ((len(max(show_stats)) - len(stat)) + 1) * " "
+        spaces = ((len(max(stat_choices)) - len(stat)) + 1) * " "
 
         # Generate a row with color, stat name and its value
         row = f"{row_color}{stat}:{spaces}{reset}{value}"
@@ -118,12 +121,12 @@ def draw_fetch(flag: list, width: int, data: list):
     print()
 
 
-def create_fetch(flag_name: str, show_stats=None, width=None):
+def create_fetch(flag_name: str, stat_choices: list = None, width: int = None):
     # Check if the flag exists in the dictionary of flags
     assert flag_name in flags.keys(), f"flag '{flag_name}' is not a valid flag"
 
     # Generate a fetch with the given info
-    flag, width, data = generate_fetch(flag_name, show_stats, width)
+    flag, width, data = generate_fetch(flag_name, stat_choices, width)
 
     # Draw the fetch
     draw_fetch(flag, width, data)
