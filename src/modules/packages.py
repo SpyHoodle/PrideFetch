@@ -24,6 +24,7 @@ def get_num_packages() -> (int, bool):
         try:
             # Get the length of the output of the command - the number of packages
             return len(check_output(command.split(" ")).decode("utf-8").split("\n")) - 1
+
         except FileNotFoundError:
             # If the command doesn't exist, skip it
             pass

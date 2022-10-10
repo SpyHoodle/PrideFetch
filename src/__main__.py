@@ -4,6 +4,7 @@
 from argparse import ArgumentParser
 from datetime import timedelta
 from random import choice as random_choice
+import color
 
 # Title - user@hostname
 from getpass import getuser
@@ -14,7 +15,6 @@ from platform import platform as system
 from platform import release as kernel
 from time import clock_gettime, CLOCK_BOOTTIME
 from platform import machine as architecture
-
 from distro import name as distribution
 from modules.packages import get_num_packages as packages
 
@@ -47,35 +47,21 @@ stats = {
     "uptime": lambda: str(timedelta(seconds=clock_gettime(CLOCK_BOOTTIME))).split('.', 1)[0]
 }
 
-# When printed, reset will end the color of the row
-reset = "\033[0m\033[39m"
-
-# When printed, text will become bold
-bold = "\033[1m"
-
-# When printed, text will become red
-red = "\033[31m"
-
-
-def color256(col: int, bg_fg: str) -> str:
-    # Alias to avoid manually typing out escape codes every time
-    return f"\033[{48 if bg_fg == 'bg' else 38};5;{col}m"
-
 
 def generate_fetch(flag_name: str, show_stats: list = None, width: int = None) -> (list, int, list):
     # Load the chosen flag from the dictionary of flags
     flag = flags[flag_name]
 
     # Make sure that the row color is different to the color of the hostname
-    row_color = color256(flag[1] if flag[0] != flag[1] else flag[2], "fg")
+    row_color = color.color256(flag[1] if flag[0] != flag[1] else flag[2], "fg")
 
     # Set default stats to show in the fetch
     show_stats = show_stats or ["os", "pkgs", "kernel", "uptime"]
 
     # Initialise the fetch data (system info) to be displayed with the user@hostname
     data = [
-        f"{color256(flag[0], 'fg') if flag[0] != 0 else color256(242, 'fg')}"
-        f"\033[1m{getuser()}@{gethostname()}{reset}",
+        f"{color.color256(flag[0], 'fg') if flag[0] != 0 else color.color256(242, 'fg')}"
+        f"\033[1m{getuser()}@{gethostname()}{color.clear}",
     ]
 
     # Add the chosen stats to the list row_data
@@ -87,7 +73,7 @@ def generate_fetch(flag_name: str, show_stats: list = None, width: int = None) -
         spaces = ((len(max(show_stats)) - len(stat)) + 1) * " "
 
         # Generate a row with color, stat name and its value
-        row = f"{row_color}{stat}:{spaces}{reset}{value}"
+        row = f"{row_color}{stat}:{spaces}{color.clear}{value}"
 
         # Add the row to the data
         data.append(row)
@@ -113,7 +99,8 @@ def draw_fetch(flag: list, width: int, data: list) -> None:
 
     for index, row in enumerate(flag):
         # Print out each row of the fetch
-        print(f" {color256(row, 'bg')}{' ' * width}\033[49m{reset} {data[min(index, len(data) - 1)]}{reset}")
+        print(f" {color.color256(row, 'bg')}{' ' * width}\033[49m{color.clear} "  # Flag line
+              f"{data[min(index, len(data) - 1)]}{color.clear}")  # Stats line
 
     # Print a blank line again to separate the flag from the terminal prompt
     print()
@@ -136,14 +123,14 @@ def check_valid_arguments(arg_flag: str, arguments: list, valid_arguments: list)
         for argument in arguments:
             # If the argument isn't in valid_arguments, it isn't valid
             if argument not in valid_arguments:
-                print(f"{bold}{red}Error: Invalid argument '{argument}' for '{arg_flag}'{reset}\n"
-                      f"  {red}╰> must be one of '{', '.join(valid_arguments)}'{reset}")
+                print(f"{color.bold}{color.red}Error: Invalid argument '{argument}' for '{arg_flag}'{color.clear}\n"
+                      f"  {color.red}╰> must be one of '{', '.join(valid_arguments)}'{color.clear}")
                 return False
 
     # Otherwise, the user must have typed comma(s) without any arguments
     else:
-        print(f"{bold}{red}Error: No arguments given for '{arg_flag}'{reset}\n"
-              f"  {red}╰> must be one of '{', '.join(valid_arguments)}'{reset}")
+        print(f"{color.bold}{color.red}Error: No arguments given for '{arg_flag}'{color.clear}\n"
+              f"  {color.red}╰> must be one of '{', '.join(valid_arguments)}'{color.clear}")
         return False
 
     return True
@@ -202,9 +189,9 @@ def main():
         create_fetch(random_choice(flag_choices), show_stats, args.width)
 
     elif args.list:
-        # List out all the available flags
-        print(f"{bold}Available flags:{reset}\n{', '.join(flags)}\n\n"
-              f"{bold}Available stats:{reset}\n{', '.join(stats)}")
+        # List out all the available flags and stats
+        print(f"{color.bold}Available flags:{color.clear}\n{', '.join(flags)}\n\n"
+              f"{color.bold}Available stats:{color.clear}\n{', '.join(stats)}")
 
     else:
         # By default, draw the classic flag
