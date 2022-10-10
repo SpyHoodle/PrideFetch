@@ -63,8 +63,7 @@ def color256(col: int, bg_fg: str) -> str:
     return f"\033[{48 if bg_fg == 'bg' else 38};5;{col}m"
 
 
-def generate_fetch(flag_name: str, stat_choices: list = None, width: int = None) -> \
-        tuple[list[int | Any] | list[int] | Any, int | None, list[str]]:
+def generate_fetch(flag_name: str, stat_choices: list = None, width: int = None) -> (list, int, list):
     # Load the chosen flag from the dictionary of flags
     flag = flags[flag_name]
 
@@ -133,9 +132,6 @@ def create_fetch(flag_name: str, stat_choices: list = None, width: int = None):
 
 
 def check_valid_arguments(arg_flag: str, arguments: list, valid_arguments: list) -> bool:
-    # Remove empty string items and remove whitespaces
-    arguments = [argument.strip() for argument in arguments if argument.strip()]
-
     # If there are any arguments remaining
     if len(arguments) > 0:
         for argument in arguments:
@@ -175,6 +171,10 @@ def main():
         # Collect chosen stats if they exist
         show_stats = args.stats.split(",")
 
+        # Remove whitespace stat choices
+        # TODO: Rename and create function
+        show_stats = [flag.strip() for flag in show_stats if flag.strip()]
+
         # Check if the passed arguments are valid, if not, exit with an error
         if not check_valid_arguments("--stats", show_stats, list(stats)):
             exit(1)
@@ -190,6 +190,9 @@ def main():
     elif args.random:
         # Collect chosen flags if they exist
         flag_choices = args.random.split(",")
+
+        # Remove empty items and remove whitespaces
+        flag_choices = [flag.strip() for flag in flag_choices if flag.strip()]
 
         # Check if the passed arguments are valid, if not, exit with an error
         if not check_valid_arguments("--random", flag_choices, list(flags)):
