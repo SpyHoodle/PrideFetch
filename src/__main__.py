@@ -52,6 +52,9 @@ reset = "\033[0m\033[39m"
 # When printed, text will become bold
 bold = "\033[1m"
 
+# When printed, text will become red
+red = "\033[31m"
+
 
 def color256(col: int, bg_fg: str) -> str:
     # Alias to avoid manually typing out escape codes every time
@@ -146,6 +149,27 @@ def main():
     elif args.stats:
         # Collect chosen stats if they exist
         show_stats = args.stats.split(",")
+
+        # Remove empty string items and remove whitespaces
+        show_stats = [stat.strip() for stat in show_stats if stat.strip()]
+
+        # If the user has entered stats
+        if len(show_stats) > 0:
+            for stat in show_stats:
+                # If the stat isn't in stats, it isn't valid
+                if stat not in stats:
+                    # Tell the user the stat is invalid
+                    print(f"{bold}{red}Error: Invalid stat '{stat}' (does not exist){reset}")
+
+                    # Exit with an error code
+                    exit(1)
+
+        else:
+            # The user must have typed a comma without any stats
+            print(f"{bold}{red}Error: No stats given with '--stats'{reset}")
+
+            # Exit with an error code
+            exit(1)
 
     else:
         # Otherwise, use the default stats
