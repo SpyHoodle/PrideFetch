@@ -169,7 +169,7 @@ def check_valid_arguments(arg_flag: str, arguments: list, valid_arguments: list)
 def parse_comma_arguments(arg_flag: str, comma_arguments: str, valid_arguments: list) -> list:
     """
     Parses comma seperated arguments and checks if they are valid
-    :param arg_flag: The argument flag e.g. --random, --stats etc.
+    :param arg_flag: The argument command line flag e.g. --random, --stats etc.
     :param comma_arguments: Raw string of user inputted arguments including commas
     :param valid_arguments: The valid list of arguments to check against
     :return: Parsed arguments if valid, exits the program if invalid
@@ -195,7 +195,7 @@ def main():
     Main function that evaluates command line arguments
     """
 
-    # Argument configuration - options
+    # Argument configuration - pridefetch command line options
     parser = ArgumentParser()
     parser.add_argument("-l", "--list", help="lists all flags and stats that can be displayed", action="store_true")
     parser.add_argument("-a", "--all-stats", help="use all available stats (overrides '--stats')", action="store_true")
