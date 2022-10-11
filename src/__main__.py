@@ -139,9 +139,28 @@ def create_fetch(flag_name: str, show_stats: list = None, width: int = None) -> 
     draw_fetch(flag, width, data)
 
 
+def check_valid_argument(arg_flag: str, argument: str, valid_arguments: list) -> bool:
+    """
+    Checks if an argument is valid by checking if it's in a list of valid arguments
+    :param arg_flag: The argument flag e.g. --random, --stats etc.
+    :param argument: A user inputted argument
+    :param valid_arguments: The valid list of arguments to check against
+    :return: True if the argument is valid, False if not
+    """
+
+    # Check if argument is valid, by checking if it is not in valid_arguments
+    if argument not in valid_arguments:
+        _print_error(f"Invalid argument '{argument}' given for '{arg_flag}'",
+                     f"must be one of '{', '.join(valid_arguments)}'")
+        return False
+
+    else:
+        return True
+
+
 def check_valid_arguments(arg_flag: str, arguments: list, valid_arguments: list) -> bool:
     """
-    Checks if arguments are valid
+    Checks if arguments are valid by checking if they are in a list of valid arguments
     :param arg_flag: The argument flag e.g. --random, --stats etc.
     :param arguments: A list of user inputted arguments
     :param valid_arguments: The valid list of arguments to check against
@@ -152,15 +171,13 @@ def check_valid_arguments(arg_flag: str, arguments: list, valid_arguments: list)
     if len(arguments) > 0:
         for argument in arguments:
             # If the argument isn't in valid_arguments, it isn't valid
-            if argument not in valid_arguments:
-                print(f"{color.bold}{color.red}Error: Invalid argument '{argument}' for '{arg_flag}'{color.clear}\n"
-                      f"  {color.red}╰> must be one of '{', '.join(valid_arguments)}'{color.clear}")
+            if not check_valid_argument(arg_flag, argument, valid_arguments):
                 return False
 
     # Otherwise, the user must have typed comma(s) without any arguments
     else:
-        print(f"{color.bold}{color.red}Error: No arguments given for '{arg_flag}'{color.clear}\n"
-              f"  {color.red}╰> must be one of '{', '.join(valid_arguments)}'{color.clear}")
+        _print_error(f"No arguments given for '{arg_flag}'",
+                     f"must be one of '{', '.join(valid_arguments)}'")
         return False
 
     return True
@@ -188,6 +205,22 @@ def parse_comma_arguments(arg_flag: str, comma_arguments: str, valid_arguments: 
     # Otherwise return the arguments
     else:
         return arguments
+
+
+def _print_error(error: str, help_message: str = None) -> None:
+    """
+    Prints an error message with optionally an extra help message
+    :param error: Error message to print
+    :param help_message: Optional help message
+    :return:
+    """
+
+    # Print out the error message
+    print(f"{color.bold}{color.red}Error: {error}{color.clear}")
+
+    # If the help message was given, print it out
+    if help_message:
+        print(f"  {color.red}╰> {help_message}{color.clear}")
 
 
 def main():
@@ -220,6 +253,10 @@ def main():
         show_stats = None
 
     if args.flag:
+        # Check if the flag is a valid flag
+        if not check_valid_argument("--flag", args.flag, list(flags)):
+            exit(1)
+
         # Draw the chosen flag and system information
         create_fetch(args.flag, show_stats, args.width)
 
