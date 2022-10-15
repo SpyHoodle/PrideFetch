@@ -4,6 +4,7 @@
 from argparse import ArgumentParser
 from datetime import timedelta
 from random import choice as random_choice
+from shutil import get_terminal_size
 import color
 
 # Title - user@hostname
@@ -67,9 +68,13 @@ def generate_fetch(flag_name: str, show_stats: list = None, width: int = None) -
     show_stats = show_stats or ["os", "pkgs", "kernel", "uptime"]
 
     # Initialise the fetch data (system info) to be displayed with the user@hostname
+    title = f'{getuser()}@{gethostname()}'
     data = [
-        f"{color.color256(flag[0], 'fg') if flag[0] != 0 else color.color256(242, 'fg')}"
-        f"\033[1m{getuser()}@{gethostname()}{color.clear}",
+        [
+            title,
+            f"{color.color256(flag[0], 'fg') if flag[0] != 0 else color.color256(242, 'fg')}"
+            f"{color.bold}{title}{color.clear}"
+        ]
     ]
 
     # Add the chosen stats to the list row_data
@@ -81,21 +86,29 @@ def generate_fetch(flag_name: str, show_stats: list = None, width: int = None) -
         spaces = ((len(max(show_stats)) - len(stat)) + 1) * " "
 
         # Generate a row with color, stat name and its value
-        row = f"{row_color}{stat}:{spaces}{color.clear}{value}"
+        row = f"{stat}:{spaces}{value}"
+        colored_row = f"{row_color}{stat}:{spaces}{color.clear}{value}"
 
         # Add the row to the data
-        data.append(row)
+        data.append([row, colored_row])
 
     # Until the flag is a greater length than the data
     while len(flag) < len(data):
         # If the data is greater than the flag length then duplicate the length of the flag
         flag = [element for element in flag for _ in (0, 1)]
 
-    # Set the width of the flag relative to its height (keep it in a ratio)
-    width = width or round(len(flag) * 1.5 * 3)
+    if width == "max":
+        # Calculate the width of the flag if the user has chosen the maximum possible width
+        # Removes the maximum width of stats, 2 for the beginning space and the space between the flag and stats,
+        # and 1 for a space on the end from the terminal width
+        width = get_terminal_width() - get_max_stat_width(data) - 2 - 1
+
+    else:
+        # Set the width of the flag relative to its height (keep it in a ratio)
+        width = width or round(len(flag) * 1.5 * 3)
 
     # Ensures nothing is printed for empty lines
-    data.append("")
+    data.append(["", ""])
 
     # Return all the flag information ready for drawing
     return flag, width, data
@@ -109,13 +122,24 @@ def draw_fetch(flag: list, width: int, data: list) -> None:
     :param data: System stats data
     """
 
+    # Calculate the total width of the fetch
+    # Adds together the flag width, the maximum width of the stats
+    # and 2 for the beginning space and space between the flag and stats
+    total_width = width + get_max_stat_width(data) + 2
+
+    # If the total width is greater than the terminal width, print an error and exit with an error code
+    if total_width > get_terminal_width():
+        _print_error("Failed to print fetch to the terminal",
+                     f"Terminal dimensions are too small for flag width of {width} (total width of {total_width})")
+        exit(1)
+
     # Print a blank line to separate the flag from the terminal prompt
     print()
 
     for index, row in enumerate(flag):
         # Print out each row of the fetch
         print(f" {color.color256(row, 'bg')}{' ' * width}\033[49m{color.clear} "  # Flag rows
-              f"{data[min(index, len(data) - 1)]}{color.clear}")  # Stats rows
+              f"{data[min(index, len(data) - 1)][1]}{color.clear}")  # Stats rows
 
     # Print a blank line again to separate the flag from the terminal prompt
     print()
@@ -156,6 +180,25 @@ def check_valid_argument(arg_flag: str, argument: str, valid_arguments: list) ->
 
     else:
         return True
+
+
+def get_max_stat_width(data: list) -> int:
+    """
+    Calculates the maximum width of a set of stats (data)
+    :param data: The set of stats / fetch data
+    :return: Maximum width of a set of stats
+    """
+
+    return max(len(stat[0]) for stat in data)
+
+
+def get_terminal_width() -> int:
+    """
+    Calculates the width of the terminal
+    :return: Width of the terminal
+    """
+
+    return get_terminal_size()[0]
 
 
 def check_valid_arguments(arg_flag: str, arguments: list, valid_arguments: list) -> bool:
@@ -236,6 +279,7 @@ def main():
     parser.add_argument("-r", "--random", help="randomly choose a flag from a comma-seperated list")
     parser.add_argument("-s", "--stats", help="choose the stats to appear from a comma-seperated list")
     parser.add_argument("-w", "--width", help="choose a custom width for the flag", type=int)
+    parser.add_argument("-m", "--max-width", help="sets the flag to fill the terminal width", action="store_true")
 
     # Parse (collect) any arguments
     args = parser.parse_args()
@@ -252,20 +296,28 @@ def main():
         # Otherwise, use the default stats
         show_stats = None
 
+    if args.max_width:
+        # Set the width to maximum possible
+        width = "max"
+
+    else:
+        # Otherwise, use args.width
+        width = args.width
+
     if args.flag:
         # Check if the flag is a valid flag
         if not check_valid_argument("--flag", args.flag, list(flags)):
             exit(1)
 
         # Draw the chosen flag and system information
-        create_fetch(args.flag, show_stats, args.width)
+        create_fetch(args.flag, show_stats, width)
 
     elif args.random:
         # Parse chosen random flag arguments if they exist
         flag_choices = parse_comma_arguments("--random", args.random, list(flags))
 
         # Draw a randomly selected flag from the list
-        create_fetch(random_choice(flag_choices), show_stats, args.width)
+        create_fetch(random_choice(flag_choices), show_stats, width)
 
     elif args.list:
         # List out all the available flags and stats
@@ -274,7 +326,7 @@ def main():
 
     else:
         # By default, draw the classic flag
-        create_fetch("classic", show_stats, args.width)
+        create_fetch("classic", show_stats, width)
 
 
 if __name__ == "__main__":
