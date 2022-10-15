@@ -101,7 +101,7 @@ def generate_fetch(flag_name: str, show_stats: list = None, flag_width: int = No
         # Calculate the width of the flag if the user has chosen the maximum possible width
         # Removes the maximum width of stats, 2 for the beginning space and the space between the flag and stats,
         # and 1 for a space on the end from the terminal width
-        flag_width = get_terminal_width() - get_max_stat_width(data) - 2 - 1
+        flag_width = _get_terminal_width() - _get_max_stat_width(data) - 2 - 1
 
     else:
         # Set the width of the flag relative to its height (keep it in a ratio)
@@ -131,12 +131,12 @@ def draw_fetch(flag: list, flag_width: int, data: list) -> None:
     # Calculate the total width of the fetch
     # Adds together the flag width, the maximum width of the stats
     # and 2 for the beginning space and space between the flag and stats
-    total_width = flag_width + get_max_stat_width(data) + 2
+    fetch_width = flag_width + _get_max_stat_width(data) + 2
 
     # If the total width is greater than the terminal width, print an error and exit with an error code
-    if total_width > get_terminal_width() or flag_width < 0:
+    if fetch_width > _get_terminal_width() or flag_width < 0:
         _print_error("Terminal is too small to print fetch",
-                     f"Total width of {total_width} > terminal width of {get_terminal_width()}")
+                     f"Total fetch width of {fetch_width} > terminal width of {_get_terminal_width()}")
         exit(1)
 
     # Print a blank line to separate the flag from the terminal prompt
@@ -186,25 +186,6 @@ def check_valid_argument(arg_flag: str, argument: str, valid_arguments: list) ->
 
     else:
         return True
-
-
-def get_max_stat_width(data: list) -> int:
-    """
-    Calculates the maximum width of a set of stats (data)
-    :param data: The set of stats / fetch data
-    :return: Maximum width of a set of stats
-    """
-
-    return max(len(stat[0]) for stat in data)
-
-
-def get_terminal_width() -> int:
-    """
-    Calculates the width of the terminal
-    :return: Width of the terminal
-    """
-
-    return get_terminal_size()[0]
 
 
 def check_valid_arguments(arg_flag: str, arguments: list, valid_arguments: list) -> bool:
@@ -272,6 +253,25 @@ def _print_error(error: str, help_message: str = None) -> None:
         print(f"  {color.red}╰> {help_message}{color.clear}")
 
 
+def _get_max_stat_width(data: list) -> int:
+    """
+    Calculates the maximum width of a set of stats (data)
+    :param data: The set of stats / fetch data
+    :return: Maximum width of a set of stats
+    """
+
+    return max(len(stat[0]) for stat in data)
+
+
+def _get_terminal_width() -> int:
+    """
+    Calculates the width of the terminal
+    :return: Width of the terminal
+    """
+
+    return get_terminal_size()[0]
+
+
 def main():
     """
     Main function that evaluates command line arguments
@@ -285,7 +285,8 @@ def main():
     parser.add_argument("-r", "--random", help="randomly choose a flag from a comma-seperated list")
     parser.add_argument("-s", "--stats", help="choose the stats to appear from a comma-seperated list")
     parser.add_argument("-w", "--width", help="choose a custom width for the flag", type=int)
-    parser.add_argument("-m", "--max-width", help="sets the flag to fill the terminal width", action="store_true")
+    parser.add_argument("-m", "--max-width", help="makes the flag fill the terminal width (overrides '--width')",
+                        action="store_true")
 
     # Parse (collect) any arguments
     args = parser.parse_args()
