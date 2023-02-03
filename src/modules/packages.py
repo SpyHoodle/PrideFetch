@@ -2,14 +2,14 @@ from subprocess import check_output
 
 commands = [
     "pacman -Qq --color never",  # Arch Linux
-    "xbps-query -l",  # Void Linux
-    "kiss l",  # KISS Linux
     "dpkg-query -f '.\n' -W",  # Debian, Ubuntu, Mint
-    "dnf list installed",  # Fedora
-    "zypper search -i",  # openSUSE
+    "dnf list installed | tail -n +2",  # Fedora, RHEL
     "rpm -qa",  # RHEL, Fedora Core, CentOS
-    "yum list installed",  # RHEL, Fedora Core, CentOS
+    "yum list installed | tail -n +2",  # RHEL, Fedora Core, CentOS
+    "xbps-query -l",  # Void Linux
     "nix-store -qR /run/current-system/sw",  # NixOS
+    "zypper search -i",  # openSUSE
+    "kiss l",  # KISS Linux
     "equery list '*'",  # Gentoo
     "qlist -I",  # Gentoo
     "pkg info -a",  # BSDs
