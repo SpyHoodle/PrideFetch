@@ -7,7 +7,6 @@ commands = [
     "rpm -qa",  # RHEL, Fedora Core, CentOS
     "yum list installed | tail -n +2",  # RHEL, Fedora Core, CentOS
     "xbps-query -l",  # Void Linux
-    "nix-store -qR /run/current-system/sw",  # NixOS
     "zypper search -i",  # openSUSE
     "kiss l",  # KISS Linux
     "equery list '*'",  # Gentoo
@@ -15,6 +14,7 @@ commands = [
     "pkg info -a",  # BSDs
     "pkg_info",  # BSDs
     "apk info",  # Alpine
+    "nix-store -qR /run/current-system/sw",  # Nix
 ]
 
 
