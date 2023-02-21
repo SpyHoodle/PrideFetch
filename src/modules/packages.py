@@ -2,6 +2,7 @@ from subprocess import check_output
 
 commands = [
     "pacman -Qq --color never",  # Arch Linux
+    "brew list",  # macOS
     "dpkg-query -f '.\n' -W",  # Debian, Ubuntu, Mint
     "dnf list installed | tail -n +2",  # Fedora, RHEL
     "rpm -qa",  # RHEL, Fedora Core, CentOS

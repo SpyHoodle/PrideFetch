@@ -24,7 +24,7 @@ Originally forked from [megabytesofrem/pridefetch](https://github.com/megabyteso
 
 ## Quickstart
 
-**Requirements:** `Python 3.7` or higher and `python-distro`
+**Requirements:** `Python 3.7` or higher, `python-distro` and `python-psutil`
 ```bash
 git clone https://github.com/SpyHoodle/pridefetch.git
 cd pridefetch/src

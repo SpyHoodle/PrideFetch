@@ -14,7 +14,8 @@ from socket import gethostname
 # System info modules
 from platform import platform as system
 from platform import release as kernel
-from time import clock_gettime, CLOCK_BOOTTIME
+from time import time
+from psutil import boot_time
 from platform import machine as architecture
 from distro import name as distribution
 from modules.packages import get_num_packages as packages
@@ -45,7 +46,7 @@ stats = {
     "arch": lambda: architecture() or 'N/A',
     "pkgs": lambda: packages() or 'N/A',
     "kernel": lambda: kernel() or system() or 'N/A',
-    "uptime": lambda: str(timedelta(seconds=clock_gettime(CLOCK_BOOTTIME))).split('.', 1)[0]
+    "uptime": lambda: str(timedelta(seconds=time() - boot_time())).split('.', 1)[0]
 }
 
 
