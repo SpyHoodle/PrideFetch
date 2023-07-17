@@ -12,6 +12,7 @@ class PackagesCommand:
 
 packages_commands: list[PackagesCommand] = [
     PackagesCommand("pacman -Qq --color never"),  # Arch Linux
+    PackagesCommand("brew list"),  # macOS
     PackagesCommand("dpkg-query -f '.\n' -W"),  # Debian, Ubuntu, Mint
     PackagesCommand("dnf list installed -q", -1),  # Fedora, RHEL
     PackagesCommand("yum list installed -q", -1),  # RHEL, Fedora Core, CentOS
