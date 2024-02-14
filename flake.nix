@@ -20,6 +20,12 @@
     in {
       pridefetch = pkgs-unstable.pridefetch.overrideAttrs (finalAttrs: previousAttrs: {
         src = builtins.path { path = ./.; name = "pridefetch"; };
+	buildInputs = [ 
+	  (pkgs-unstable.python3.withPackages (pythonPackages: with pythonPackages; [
+	    distro
+	    psutil
+	  ]))
+	];
       });
     });
 
